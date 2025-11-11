@@ -47,14 +47,14 @@ const Auth = () => {
   return (
     <div className="min-h-screen w-full relative flex items-center justify-center overflow-hidden">
       {/* Animated Background Gradient - Fixed */}
-      <div className="fixed inset-0 bg-linear-to-br from-indigo-900 via-purple-900 to-black animate-gradient" />
+      <div className="fixed inset-0 bg-linear-to-br from-grey-800 via-grey-900 to-black animate-gradient" />
 
       {/* Background Image with Ken Burns effect - Fixed */}
       <motion.img
-        src="./Auth_back.webp"
+        src="./Auth_back.png"
         alt="background"
         className="fixed inset-0 w-full h-full object-cover opacity-50"
-        initial={{ scale: 1.2 }}
+        initial={{ scale: 1.1 }}
         animate={{ scale: 1 }}
         transition={{ duration: 20, repeat: Infinity, repeatType: "reverse" }}
       />
@@ -72,30 +72,30 @@ const Auth = () => {
         transition={{ duration: 0.7, ease: "easeOut" }}
         className="relative z-10"
       >
-        <Card className="w-[500px] backdrop-blur-md bg-black/30 border border-white/10 shadow-2xl">
+        <Card className="w-[100%] backdrop-blur-md bg-white/50 border border-white/10 shadow-2xl">
           <CardHeader className="space-y-6 text-center pt-8 pb-4">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.5, type: "spring", stiffness: 150 }}
             >
-              <div className="w-48 h-24 mx-auto bg-linear-to-br from-white/10 to-white/5 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/10">
+              <div className="w-80 h-32 p-10 mx-auto rounded-xl flex items-center justify-center">
                 <img
-                  src="./main_logo.png"
-                  className="w-50 h-auto"
+                  src="./main_logo1.png"
+                  className="w-80 h-auto"
                 />
               </div>
             </motion.div>
-            <CardTitle className="text-3xl font-bold bg-linear-to-r from-white to-white/80 bg-clip-text text-transparent">
+            <CardTitle className="text-3xl font-bold bg-linear-to-r from-black to-black/80 bg-clip-text text-transparent mb-0 pb-2">
               SatHack Submission Portal
             </CardTitle>
-            <h6 className=" text-amber-50">Only team leaders can login</h6>
+            <h6 className=" text-grey-900">Only team leaders can login</h6>
           </CardHeader>
-          <CardContent className="p-8 space-y-8">
+          <CardContent className="p-4 space-y-4">
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
                 variant="outline"
-                className="w-full h-14 bg-linear-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 text-black backdrop-blur-sm text-lg font-medium flex items-center justify-center gap-3 transition-all duration-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full h-14 bg-white hover:bg-white/80 text-black hover:backdrop-blur-sm text-lg font-medium flex items-center justify-center gap-3 transition-all duration-300 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed"
                 onClick={handleGoogleSignIn}
                 disabled={isSigningIn || isLoading}
               >
