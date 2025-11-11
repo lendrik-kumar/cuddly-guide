@@ -129,9 +129,9 @@ const Submission = () => {
   return (
     <div className="min-h-screen w-full relative">
       {/* Background elements - same as Auth page */}
-      <div className="fixed inset-0 bg-linear-to-br from-indigo-900 via-purple-900 to-black animate-gradient" />
+      <div className="fixed inset-0 bg-linear-to-br from-grey-800 via-grey-900 to-black animate-gradient" />
       <motion.img
-        src="./Auth_back.webp"
+        src="./Auth_back.png"
         alt="background"
         className="fixed inset-0 w-full h-full object-cover opacity-50"
         initial={{ scale: 1.2 }}
@@ -278,7 +278,7 @@ const Submission = () => {
                       <Button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full h-12 bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full h-12 bg-linear-to-r from-gray-700 to-gray-800 hover:from-slate-700 hover:to-slate-800 border border-white/50 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isSubmitting ? "Submitting..." : hasExistingSubmission ? "Update Submission" : "Submit Project"}
                       </Button>

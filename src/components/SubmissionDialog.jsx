@@ -13,7 +13,7 @@ const SubmissionDialog = ({ isOpen, onClose, onConfirm, formData, teamInfo, isSu
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !isSubmitting && onClose(!open)}>
-      <DialogContent className="bg-black/90 backdrop-blur-lg border border-white/20 text-white max-w-2xl">
+      <DialogContent className="bg-black/10 backdrop-blur-lg border border-white/20 text-white max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold bg-linear-to-r from-white to-white/80 bg-clip-text text-transparent">
             Confirm Submission
@@ -105,7 +105,7 @@ const SubmissionDialog = ({ isOpen, onClose, onConfirm, formData, teamInfo, isSu
           <Button
             onClick={onConfirm}
             disabled={isSubmitting}
-            className="bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-linear-to-r from-gray-700 to-gray-800 hover:from-slate-700 hover:to-slate-800 text-white border border-white/50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? "Submitting..." : "Confirm & Submit"}
           </Button>
