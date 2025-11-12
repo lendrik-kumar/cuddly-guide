@@ -1,8 +1,7 @@
-// AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from 'react';
 import { auth } from '../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { authenticateUserWithToken, logoutUser as apiLogout, getAbout } from '../services/authService';
+import { authenticateUser, logoutUser as apiLogout } from '../services/authService';
 import { toast } from 'react-toastify';
 
 const AuthContext = createContext(null);
@@ -23,71 +22,51 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      // firebaseUser is null when signed out
-      if (!firebaseUser) {
-        setUser(null);
-        setIsAuthenticated(false);
-        setTeamData(null);
-        setIsLoading(false);
-        return;
-      }
-
-      // firebaseUser exists
-      setIsLoading(true);
-      try {
-        // 1) Check backend session first (maybe cookie already exists)
-        const about = await getAbout().catch(() => null);
-        if (about && about.data && about.data.data) {
-          // backend session exists
-          setUser(about.data.data);
+      if (firebaseUser) {
+        try {
+          setIsLoading(true);
+          // Authenticate with backend
+          const authResponse = await authenticateUser(
+            firebaseUser.uid,
+            firebaseUser.email
+          );
+          
+          setUser({
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            displayName: firebaseUser.displayName,
+            photoURL: firebaseUser.photoURL,
+            teamId: authResponse.teamId,
+            ...authResponse,
+          });
           setIsAuthenticated(true);
-          setTeamData(about.data.data || null);
-          setIsLoading(false);
-          return;
-        }
-
-        // 2) No backend session: get ID token and authenticate backend
-        const idToken = await firebaseUser.getIdToken(/* forceRefresh */ false);
-
-        const authResponse = await authenticateUserWithToken(idToken);
-
-        setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
-          photoURL: firebaseUser.photoURL,
-          teamId: authResponse.teamId,
-          ...authResponse,
-        });
-        setTeamData(authResponse || null);
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error('Backend authentication failed:', error);
-
-        // Decide to sign out only for clear unauthorized cases
-        const status = error?.response?.status;
-        if (status === 401 || status === 403) {
-          // definite authorization failure — sign out
-          try {
-            await auth.signOut();
-          } catch (e) {
-            console.error('Error signing out after backend rejection:', e);
-          }
+        } catch (error) {
+          console.error('Backend authentication failed:', error);
+          // Sign out from Firebase if backend auth fails
+          await auth.signOut();
           setUser(null);
           setIsAuthenticated(false);
           setTeamData(null);
-          toast.error(
-            error.response?.data?.error ||
-              'Unauthorized — only team leaders may access the portal.'
-          );
-        } else {
-          // transient or unknown error — don't immediately sign out to avoid loop
-          toast.error(
-            error.response?.data?.error ||
-              'Could not validate session with backend. Please try again.'
-          );
+          
+          // Show user-friendly error message
+          let errorMessage = "Only team leaders can access this portal.";
+
+          if (error.response?.data?.error) {
+            errorMessage = error.response.data.error;
+          } else if (Array.isArray(error.response?.data?.details)) {
+            errorMessage = error.response.data.details.join(", ");
+          } else if (typeof error.response?.data === "string") {
+            errorMessage = error.response.data;
+          }
+
+          toast.error(errorMessage);
+        } finally {
+          setIsLoading(false);
         }
-      } finally {
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+        setTeamData(null);
         setIsLoading(false);
       }
     });
@@ -98,17 +77,18 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await apiLogout();
-    } catch (err) {
-      console.error('Logout API error:', err);
-    }
-    try {
       await auth.signOut();
-    } catch (err) {
-      console.error('Firebase signOut error:', err);
+      setUser(null);
+      setIsAuthenticated(false);
+      setTeamData(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still sign out from Firebase even if API call fails
+      await auth.signOut();
+      setUser(null);
+      setIsAuthenticated(false);
+      setTeamData(null);
     }
-    setUser(null);
-    setIsAuthenticated(false);
-    setTeamData(null);
   };
 
   const value = {
@@ -122,3 +102,4 @@ export const AuthProvider = ({ children }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
