@@ -40,8 +40,3 @@ export const getTeamRegistration = async () => {
   return response.data;
 };
 
-export const getAbout = async () => {
-  const response = await api.get('/users/about', { withCredentials: true });
-  return response;
-};
-
