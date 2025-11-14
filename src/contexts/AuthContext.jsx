@@ -3,6 +3,7 @@ import { auth } from '../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { authenticateUser, logoutUser as apiLogout } from '../services/authService';
 import { toast } from 'react-toastify';
+import { getRedirectResult } from 'firebase/auth';
 
 const AuthContext = createContext(null);
 
@@ -23,6 +24,18 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+
+    try {
+      const redirectResult = await getRedirectResult(auth);
+
+      if (redirectResult?.user) {
+        console.log("[AUTH] Redirect sign-in successful");
+      }
+    } catch (err) {
+      console.error("Redirect auth error:", err);
+    }
+
+
       if (firebaseUser) {
         // Prevent infinite loop: if we're already processing this user, skip
         const currentUid = firebaseUser.uid;

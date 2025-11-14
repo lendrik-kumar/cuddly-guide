@@ -10,7 +10,8 @@ import { FcGoogle } from "react-icons/fc";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { auth, provider } from "../lib/firebase";
-import { signInWithPopup } from "firebase/auth";
+// import { signInWithPopup } from "firebase/auth";
+import { signInWithRedirect } from "firebase/auth";
 import { useAuth } from "../contexts/AuthContext";
 import { toast } from "react-toastify";
 
@@ -34,7 +35,7 @@ const Auth = () => {
 
     try {
       setIsSigningIn(true);
-      await signInWithPopup(auth, provider);
+      await signInWithRedirect(auth, provider);
       // Backend authentication is handled by AuthContext
       // Navigation happens automatically when isAuthenticated becomes true
     } catch (error) {
