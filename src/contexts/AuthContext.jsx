@@ -25,15 +25,15 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
 
-    try {
-      const redirectResult = await getRedirectResult(auth);
+    // try {
+    //   const redirectResult = await getRedirectResult(auth);
 
-      if (redirectResult?.user) {
-        console.log("[AUTH] Redirect sign-in successful");
-      }
-    } catch (err) {
-      console.error("Redirect auth error:", err);
-    }
+    //   if (redirectResult?.user) {
+    //     console.log("[AUTH] Redirect sign-in successful");
+    //   }
+    // } catch (err) {
+    //   console.error("Redirect auth error:", err);
+    // }
 
 
       if (firebaseUser) {
