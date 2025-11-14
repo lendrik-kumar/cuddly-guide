@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { auth } from '../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import api from '../lib/axios';
 import { authenticateUser, logoutUser as apiLogout } from '../services/authService';
 import { toast } from 'react-toastify';
-import { getRedirectResult } from 'firebase/auth';
 
 const AuthContext = createContext(null);
 
@@ -21,6 +21,20 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [teamData, setTeamData] = useState(null);
   const authAttemptRef = useRef(null); // Track auth attempts to prevent loops
+
+  // Initialize axios Authorization header if token exists in localStorage
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        api.defaults.headers = api.defaults.headers || {};
+        api.defaults.headers.common = api.defaults.headers.common || {};
+        api.defaults.headers.common.Authorization = `Bearer ${token}`;
+      }
+    } catch {
+      // Ignore if localStorage isn't available
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -53,6 +67,18 @@ export const AuthProvider = ({ children }) => {
             firebaseUser.uid,
             firebaseUser.email
           );
+
+          // If backend returned a token (localStorage flow), store it and set axios header
+          try {
+            if (authResponse?.token) {
+              localStorage.setItem('token', authResponse.token);
+              api.defaults.headers = api.defaults.headers || {};
+              api.defaults.headers.common = api.defaults.headers.common || {};
+              api.defaults.headers.common.Authorization = `Bearer ${authResponse.token}`;
+            }
+          } catch (err) {
+            console.warn('[AUTH] Could not persist token to localStorage', err);
+          }
           
           // Clear the attempt ref on success
           authAttemptRef.current = null;
@@ -71,6 +97,16 @@ export const AuthProvider = ({ children }) => {
           
           // Clear the attempt ref before signing out
           authAttemptRef.current = null;
+
+          // Clear any stored token/header to avoid reusing an invalid token
+          try {
+            localStorage.removeItem('token');
+            if (api?.defaults?.headers?.common) {
+              delete api.defaults.headers.common.Authorization;
+            }
+          } catch {
+            // ignore
+          }
           
           // Determine if this is a permanent error (403) or temporary (401/network)
           const isPermanentError = error.response?.status === 403;
@@ -135,6 +171,16 @@ export const AuthProvider = ({ children }) => {
     try {
       await apiLogout();
       await auth.signOut();
+      // Clear stored token and axios header
+      try {
+        localStorage.removeItem('token');
+        if (api?.defaults?.headers?.common) {
+          delete api.defaults.headers.common.Authorization;
+        }
+      } catch (err) {
+        console.debug('[AUTH] Failed to remove token/header', err);
+      }
+
       setUser(null);
       setIsAuthenticated(false);
       setTeamData(null);
@@ -142,6 +188,15 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout error:', error);
       // Still sign out from Firebase even if API call fails
       await auth.signOut();
+      try {
+        localStorage.removeItem('token');
+        if (api?.defaults?.headers?.common) {
+          delete api.defaults.headers.common.Authorization;
+        }
+      } catch (err) {
+        console.debug('[AUTH] Failed to remove token/header', err);
+      }
+
       setUser(null);
       setIsAuthenticated(false);
       setTeamData(null);

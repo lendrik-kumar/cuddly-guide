@@ -12,6 +12,29 @@ const api = axios.create({
   },
 });
 
+// Attach token from localStorage for localStorage-based auth flows.
+// This allows clients that store JWT in localStorage to authenticate
+// requests by sending `Authorization: Bearer <token>` automatically.
+api.interceptors.request.use(
+  (config) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers = config.headers || {};
+        // Do not overwrite an existing Authorization header
+        if (!config.headers.Authorization && !config.headers.authorization) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      }
+    } catch (e) {
+      // localStorage may not be available in some environments; ignore safely
+      console.warn('[AXIOS] Could not read token from localStorage', e);
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
